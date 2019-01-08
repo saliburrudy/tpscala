@@ -17,9 +17,7 @@ object Parser {
   }
 
   // TODO
-  def toName: String => Title = t => {
-    title(t)
-  }
+  def toName: String => Title = t => title(t)
 
   // TODO
   def toCountry: String => Option[Country] = c => {
@@ -36,10 +34,10 @@ object Parser {
   // TODO
   def toYear: String => Option[Year] = y => {
     y match {
-      case y if(!y.forall(_.isDigit)) =>{println("pas que des digits : "+y); None}
-      case y if(y.length > 4 || y.length < 4) => {println("trop grand ou trop petite : "+y);None}
-      case y if(y.toInt >= 3000) => {println("pas le bon numéro au début : "+y); None}
-      case _ =>  {println("C'est bon : "+y);Some(year(y.toInt))}
+      case y if(!y.forall(_.isDigit)) => println("Is not all digit : "+y); None
+      case y if(y.toInt >= 3000) => println(": "+y); None
+      case y if(y.length > 4 || y.length < 4) => println("trop : "+y);None
+      case _ =>  println("oKay : "+y);Some(year(y.toInt))
     }
   }
 
