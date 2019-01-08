@@ -69,78 +69,74 @@ object Part1 {
   def aggregateValid[A](l: List[Either[Error, A]], combine: (A, A) => A, empty: A): A =
     aggregate(keepValid(l), combine, empty)
 
-  trait Monoid[A]{
-    def value:A
-    def operate(a:A, b:A):A
 
-  }
-  def aggregateValidM[A](l:List[Either[Error, Monoid[A]]],empty: A) : A = {
-    def function(l: List[Monoid[A]], empty: A) : A = l match {
-      case head :: tail => head.operate(head.value, function(tail,empty))
-      case Nil => empty
-    }
-    function(keepValid(l),empty)
+  // 1.8 Create the Monoid typeclass and rewrite the above "aggregateValid" (.5pts)
+  trait Semigroup[A] {
+    def combine(a: A, b: A) : A
   }
 
+  trait Monoid[A] extends Semigroup[A]{
+    def empty:A
+  }
 
   // 1.9 Implement the Monoid typeclass for Strings and give an example usage with aggregateValidM (.5pts)
-  object Monoid {
-    implicit val monoidString = new Monoid[String] {
-      def value = ""
+  def aggregateValidM{
+    implicit val stringConcatMonoid: Monoid[String] = new Monoid[String] {
+      def combine(a: String, b: String): String = a + " " + b
 
-      def operate(x: String, y: String): String = x + y
+      def empty: String = ""
     }
   }
-  val mono = Monoid.monoidString("Wesh Alors")
-  aggregateValidM(List(mono, mono), "")
 
 
   // 1.10 Refactor the following object oriented hierarchy with an ADT (1.5pts)
-  // Pas le temps de faire quelque chose de bien
-  sealed trait FinancialAsset {
+
+  trait Earnings[T] {
+    def computeEarnings(t:T): Double
+  }
+
+  sealed trait FinancialAsset{
     def computeEarnings: Double
   }
 
-  case class FlatRateAsset(rate: Double, amount: Double) extends FinancialAsset {
-    override def computeEarnings: Double = amount + (amount * rate)
+  case class FlatRateAsset(rate:Double, amount:Double)
+
+  object FlatRateAsset{
+    implicit val Earnings = new Earnings[FlatRateAsset] {
+      def computeEarnings(flatRateAsset: FlatRateAsset)=  flatRateAsset.amount + (flatRateAsset.amount * flatRateAsset.rate)
+    }
   }
 
-  object LivretA {
-    private val Rate: Double = 0.75
+  case class LivretA(amount:Double, Rate:Double = 0.75)
+
+
+  case class Pel(rate:Double = 1.5,amount: Double, creation: Instant, GovernmentGrant:Int = 1525)
+
+  object Pel{
+    implicit val Earnings = new Earnings[Pel] {
+      def computeEarnings(p:Pel): Double =
+        if (Instant.now().minus(4, YEARS).isAfter(p.creation))
+          computeEarnings(p) + p.GovernmentGrant
+        else
+          computeEarnings(p)
+    }
   }
 
-  case class LivretA(override val amount: Double) extends FlatRateAsset(LivretA.Rate, amount) {
-  }
-
-  object Pel {
-    private val Rate: Double = 1.5
-    private val GovernmentGrant: Int = 1525
-  }
-
-  case class Pel(override val amount: Double, creation: Instant) extends FlatRateAsset(Pel.Rate, amount) {
-    override protected val rate: Double = Pel.Rate
-    override def computeEarnings: Double =
-      if (Instant.now().minus(4, YEARS).isAfter(creation))
-        super.computeEarnings + Pel.GovernmentGrant
-      else
-        super.computeEarnings
-  }
-
+  case class CarSale(amount:Int, StateHorsePowerTaxation:Int = 500, horsePower:Int)
   object CarSale {
-    private val StateHorsePowerTaxation: Int = 500
+    implicit val Earnings = new Earnings[CarSale]{
+      def computeEarnings(c:CarSale):Double = c.amount - (c.StateHorsePowerTaxation * c.horsePower)
+    }
   }
 
-  class CarSale(amount: Int, horsePower: Int) extends FinancialAsset {
-    override def computeEarnings: Double = amount - (CarSale.StateHorsePowerTaxation * horsePower)
-  }
-  
   // 1.11 Extract the "computeEarnings" logic of the above hierarchy
   // into an "Earnings" typeclass and create the adequate instances (1.5pts)
 
-  // 1.12 Rewrite the following function with your typeclass (.5pts)
-  def computeTotalEarnings(assets: List[FinancialAsset]): Double =
-    assets.map(_.computeEarnings).sum
 
+  // 1.12 Rewrite the following function with your typeclass (.5pts)
+  def computeTotalEarnings[T](assets: List[T])(implicit ev: Earnings[T]) : Double = {
+    assets.map(ev.computeEarnings(_)).sum
+  }
 
   // 1.13 Enrich the "String" type with an "atoi" extension method that parses the
   // given String to an Int IF possible (1pts)

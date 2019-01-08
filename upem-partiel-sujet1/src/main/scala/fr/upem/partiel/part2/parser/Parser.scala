@@ -8,19 +8,48 @@ import play.api.libs.json._
 object Parser {
 
   // TODO
-  def toDirector: String => Option[Director] = ???
+  def toDirector: String => Option[Director] = s =>{
+    s match {
+      case s if((s.filter(c => c.isDigit)).length > 1) => None
+      case _ => Some(director(s.split("")(0), s.split("")(1)))
+    }
+
+  }
 
   // TODO
-  def toName: String => Title = ???
+  def toName: String => Title = t => {
+    title(t)
+  }
 
   // TODO
-  def toCountry: String => Option[Country] = ???
+  def toCountry: String => Option[Country] = c => {
+    c match {
+      case c if (c == "FR") => Some(Country.France)
+      case c if (c == "UK") => Some(Country.England)
+      case c if (c == "IT") => Some(Country.Italy)
+      case c if (c == "GE") => Some(Country.Germany)
+      case c if (c == "US") => Some(Country.UnitedStates)
+      case _ => None
+    }
+  }
 
   // TODO
-  def toYear: String => Option[Year] = ???
+  def toYear: String => Option[Year] = y => {
+    y match {
+      case y if(!y.forall(_.isDigit)) =>{println("pas que des digits : "+y); None}
+      case y if(y.length > 4 || y.length < 4) => {println("trop grand ou trop petite : "+y);None}
+      case y if(y.toInt >= 3000) => {println("pas le bon numéro au début : "+y); None}
+      case _ =>  {println("C'est bon : "+y);Some(year(y.toInt))}
+    }
+  }
 
   // TODO
-  def toViews: BigDecimal => Option[Views] = ???
+  def toViews: BigDecimal => Option[Views] = bd => {
+    bd match {
+      case bd if(bd < 0) => None
+      case _ => Some(views(bd.toLongExact))
+    }
+  }
 
   implicit val directorReads = Reads[Director] {
     case JsString(value) => toDirector(value).map(JsSuccess(_)).getOrElse(JsError("Not a valid Director"))

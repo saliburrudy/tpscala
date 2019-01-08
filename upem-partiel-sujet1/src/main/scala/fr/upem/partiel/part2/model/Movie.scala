@@ -2,40 +2,49 @@ package fr.upem.partiel.part2.model
 
 import fr.upem.partiel.part2.model.Movie._
 
-
 // TODO You have to create all the classes you need for the exam
 // TODO Don't forget to read the existing code and the unit tests to get some clues !
 
 // TODO Create this model
-case class Movie(val title: Title, val director: Director, val year: Year, val views: Views, val country: Country)
+trait Movie {
+  val title:Title
+  val director:Director
+  val year:Year
+  val views:Views
+  val country:Country
+}
+
 object Movie {
 
   def apply(title: Title, director: Director, year: Year, views: Views, country: Country): Movie = {
-    new Movie(title, director, year, views, country)
+    new Movie {
+      override val title: Title = title
+      override val director: Director = director
+      override val year: Year = year
+      override val views: Views = views
+      override val country: Country = country
+    }
   }
 
   // TODO Create this model
-  trait Title
-  object Title{
-    case class Title(name: String)
+  trait Title {
+    val title: String
   }
 
   // TODO Create this model
-  trait Director
-  object Director{
-    case class Director(fn: String, ln: String)
+  trait Director {
+    val firstName: String
+    val lastName: String
   }
 
   // TODO Create this model
-  trait Year
-  object Year{
-    case class Year(value: Int)
+  trait Year {
+    val year: Int
   }
 
   // TODO Create this model
-  trait Views
-  object Views{
-    case class Views(value: Long)
+  trait Views {
+    val views: Long
   }
 
   trait Country
@@ -54,20 +63,38 @@ object Movie {
 
   }
 
+  // TODO Create this method
+  def movie(title: Title, director: Director, year: Year, views: Views, country: Country): Movie = {
+    Movie(title, director, year, views, country)
+  }
 
   // TODO Create this method
-  def movie(title: Title, director: Director, year: Year, views: Views, country: Country): Movie = Movie(title, director, year, views, country)
+  def title(s: String): Title = {
+    new Title {
+      override val title: String = s
+    }
+  }
 
   // TODO Create this method
-  def title(s: String): Title = Title(s)
+  def director(fn: String, ln: String): Director = {
+    new Director {
+      override val firstName: String = fn
+      override val lastName: String = ln
+    }
+  }
 
   // TODO Create this method
-  def director(fn: String, ln: String): Director = Director(fn, ln)
+  def year(value: Int): Year = {
+    new Year {
+      override val year: Int = value
+    }
+  }
 
   // TODO Create this method
-  def year(value: Int): Year = Year(value)
-
-  // TODO Create this method
-  def views(value: Long): Views = Views(value)
+  def views(value: Long): Views = {
+    new Views {
+      override val views: Long = value
+    }
+  }
 
 }
